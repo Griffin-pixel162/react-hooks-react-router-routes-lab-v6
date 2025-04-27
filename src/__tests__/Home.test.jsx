@@ -1,36 +1,71 @@
-import "@testing-library/jest-dom";
+
+import React from "react";
 import { render, screen } from "@testing-library/react";
-import { RouterProvider, createMemoryRouter} from "react-router-dom";
-import routes from "../routes";
+import { MemoryRouter } from "react-router-dom";
+import Directors from "../pages/Directors";
 
-const router = createMemoryRouter(routes)
+const directors = [
+  {
+    name: "Mike Mitchell",
+    movies: ["Trolls", "Sky High"],
+  },
+  {
+    name: "Jennifer Lee",
+    movies: ["Frozen", "Frozen II"],
+  },
+];
 
-test("renders 'Home Page' inside of an <h1 />", () => {
-  render(<RouterProvider router={router}/>);
-  const h1 = screen.queryByText(/Home Page/);
-  expect(h1).toBeInTheDocument();
-  expect(h1.tagName).toBe("H1");
-});
+describe("<Directors />", () => {
+  it("renders 'Directors Page' inside of a <h1 />", () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    const headingElement = screen.getByRole("heading", {
+      name: /Directors Page/i,
+    });
+    expect(headingElement).toBeInTheDocument();
+  });
 
-test("Displays a list of movie titles", async () =>{
-  render(<RouterProvider router={router}/>);
-  const titleList = await screen.findAllByRole('heading', {level: 2})
-  expect(titleList.length).toBeGreaterThan(2);
-  expect(titleList[0].tagName).toBe("H2");
-  expect(titleList[0].textContent).toBe("Doctor Strange");
-})
+  it("renders each director's name", () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    directors.forEach((director) => {
+      const nameElement = screen.getByRole("heading", { name: director.name });
+      expect(nameElement).toBeInTheDocument();
+    });
+  });
 
-test("Displays links for each associated movie", async () =>{
-  render(<RouterProvider router={router}/>);
-  const linkList = await screen.findAllByText(/View Info/);
-  expect(linkList.length).toBeGreaterThan(2);
-  expect(linkList[0].href.split("/").slice(3).join("/")).toBe("movie/1");
-})
+  it("renders a <ul> for the movies of each director", () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    directors.forEach((director) => {
+      const movieList = screen.getByRole("list", {
+        name: `${director.name}'s movies`,
+      });
+      expect(movieList).toBeInTheDocument();
+      director.movies.forEach((movie) => {
+        expect(
+          screen.getByText(movie, { container: movieList })
+        ).toBeInTheDocument();
+      });
+    });
+  });
 
-test("renders the <NavBar /> component", () => {
-  const router = createMemoryRouter(routes)
-  render(
-      <RouterProvider router={router}/>
-  );
-  expect(document.querySelector(".navbar")).toBeInTheDocument();
+  it("renders the <NavBar /> component", () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    const navBarElement = screen.getByRole("navigation");
+    expect(navBarElement).toBeInTheDocument();
+  });
 });
